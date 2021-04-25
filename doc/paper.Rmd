@@ -18,7 +18,7 @@ bibliography: references.bib
 biblio-style: apsr
 
 output:
-  pdf_document: 
+  pdf_document:
     number_sections: true
   toc: no
 fig_caption: yes
@@ -43,6 +43,7 @@ header-includes:
 ---
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
+library(GGally)
 library(dplyr)
 library(ggplot2)
 library(stringr)
@@ -76,9 +77,10 @@ include_graphics("../media/preston_1975_p235.png")
 While it is unclear whether the association is indicative for a causal link of national income on life expectancy, it is often referred to in public debates as one of the main arguments why economic growth is socially desirable. The analysis presented here is only meant to  demonstrate the workflow of the repository and not to contribute to the underlying 
 question of causality. 
 
-The data for the analysis has been collected from the Open Data repository of the World Bank (https://data.worldbank.org). The sample is limited to country-year observations that have non-missing values for all variables and I use the natural logarithm of GDP per capita as my measure for national income per capita to account for the underlying growth process that shapes national income. The descriptive statistics of the data are presented in Table \ref{tab:descriptives}.
+The data for the analysis has been collected from the Open Data repository of the World Bank (https://data.worldbank.org). The sample is limited to country-year observations that have non-missing values for all variables and I use the natural logarithm of GDP per capita as my measure for national income per capita to account for the underlying growth process that shapes national income. The descriptive statistics of the data are presented in Table \ref{tab:descriptives}. 
 
-Table \ref{tab:corr} reports the correlations between dependent and independent variables. As expected, it features a strong positive correlation between national income and life expectancy. Figure \ref{fig:scatter} visualizes this association.
+Table \ref{tab:corr} reports the correlations between dependent and independent variables. As expected, it features a strong positive correlation between national income and life expectancy. Figure \ref{fig:scatter} visualizes this association. Since the distribution of the data as well as the regression lines look very different for the Sub-Saharan Africa region, a closer look is taken at the descriptive statistics for the grouped sample in Table \ref{tab:reg_desc}. These statistics confirm the differences for the Sub-Saharan region. 
+Also, the Pearson correlations by region show differences for different regions. For that, see Table \ref{tab:reg_cor} and look at Figure \ref{fig:reg_cor_graph}!
 
 To verify that this association is robust to including controls and general cross-sectional as well as time variance, I estimate the respective coefficient for GDP per capita in a multiple  regression framework. Using a level-log multiple regression setup, Table \ref{tab:reg} yields a set of model estimates. As you can see, the association between national income and life expectancy is significant at conventional levels across all specifications. The magnitude of the association, however, is significantly reduced once one controls for unobserved cross-sectional variation by including country fixed effects.
 
@@ -152,32 +154,61 @@ latex_tab <- c(
 cat(paste(latex_tab, collapse = "\n"))
 ```
 
+```{r reg_desc, echo=F, results="asis"}
+kbl(regional_descripives, caption = "Descriptives by Region", booktabs = T) %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+```{r reg_cor, echo=F}
+kbl(regional_correlations, caption = "Pearson Correlations by Region", booktabs = T) %>%
+  kable_styling(latex_options = c("striped", "hold_position", "scale_down")) %>%
+  row_spec(7, bold = T, color = "red")
+```
+
+```{r Corr, echo = FALSE, fig.align="center", fig.cap="\\label{fig:reg_cor_graph}Pearson Correlations Regional Graph", fig.width=8, fig.height=8}
+subset <- smp %>% select(ln_gdp_capita, life_expectancy, unemployment, region)
+ggpairs(subset, columns = 1:3 ,ggplot2::aes(colour = region), upper = list(continuous = wrap("cor", size = 3)))
+```
 
 ``` {r RegTable, results="asis"}
-tab <- tab_regression$table
+tab <- tab_regression_region$table
 tab[12] <- paste(
   "\\\\[-1.8ex] & \\multicolumn{4}{c}{", smp_def$label[9], "} \\\\"
 )
 esc_var_names <- str_replace_all(smp_def$var_name, fixed ("_"), "\\_")
 reg_names <- tibble(
-  var_name = esc_var_names[c(10, 8)],
-  label = smp_def$label[c(10, 8)]
+  var_name = c(esc_var_names[c(10, 8)], "regionEurope  Central Asia", "regionLatin America  Caribbean" , "regionMiddle East  North Africa", "regionSouth Asia", "regionNorth America",
+               "regionSub-Saharan Africa", "ln\\_gdp\\_capita:regionEurope  Central Asia", "ln\\_gdp\\_capita:regionLatin America  Caribbean", "ln\\_gdp\\_capita:regionMiddle East  North Africa",
+               "ln\\_gdp\\_capita:regionSouth Asia", "ln\\_gdp\\_capita:regionNorth America", "ln\\_gdp\\_capita:regionSub-Saharan Africa"),
+  label = c(smp_def$label[c(10, 8)], "Europe and Central Asia", "Latin America and Caribbean" , "Middle East and North Africa", "South Asia", "North America", "Sub-Saharan Africa", 
+            "ln(National Income per Capita)*Europe and Central Asia", "ln(National Income per Capita)*Latin America and Caribbean", "ln(National Income per Capita)*Middle East and North Africa",
+            "ln(National Income per Capita)*South Asia", "ln(National Income per Capita)*North America", "ln(National Income per Capita)*Sub-Saharan Africa")
 )
-for (i in c(15, 18)) {
-  pos <- (i-12)/3
+for (i in 1:55) {
+  for(j in 1:length(reg_names$label))
   tab[i] <- str_replace(
-    tab[i], fixed(reg_names$var_name[pos]), reg_names$label[pos]
+    tab[i], fixed(reg_names$var_name[j]), reg_names$label[j]
   )
 }
 latex_tab <- c(
-  "\\begin{table}[!htbp]",  
+  "\\begin{table}[!htbp]",
+  "\\tiny",
   "\\caption{\\label{tab:reg}Regressions}",
   "\\centering",
   "\\begin{tabular}{lcccc}",
-  tab[8:33],
+  tab[8:69],
   "\\end{tabular}",
+  "\\begin{tablenotes}[flushleft]",
+  "\\itshape",
+  "\\setlength{\\labelsep}{0pt}",
+  "\\footnotetext",
+  "\\item [Note: In the table, the results for the regions represented in the regression output have to be interpreted in relation to the reference region in this case, which is East Asia and Pacific. Accordingly, the interaction-effects have to be interpreted relatively to the reference category.]",
+  "\\end{tablenotes}",
   "\\end{table}"
 )
+# latex_tab[34] <- " \\bfseries \\color{red} Sub-Saharan Africa & \\bfseries \\color{red} $-$10.811$^{***}$ & \\bfseries \\color{red} $-$10.849$^{***}$ & \\bfseries \\color{red} $-$11.226$^{***}$ &  \\\\ "
+latex_tab[34] <- " \\bfseries Sub-Saharan Africa & \\bfseries $-$10.811$^{***}$ & \\bfseries $-$10.849$^{***}$ & \\bfseries $-$11.226$^{***}$ &  \\\\ "
 cat(paste(latex_tab, collapse = "\n"))
 ```
 
