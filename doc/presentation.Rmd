@@ -124,7 +124,7 @@ kbl(regional_correlations, booktabs = T) %>%
 
 ### ... and displayed in a Graph
 
-```{r Corr, echo = FALSE, fig.align="center", fig.cap="\\label{fig:reg_cor_graph}Pearson Correlations Regional Differences", fig.width=8, fig.height=8}
+```{r Corr, echo = FALSE, fig.align="center", fig.width=6, fig.height=3}
 subset <- smp %>% select(ln_gdp_capita, life_expectancy, unemployment, region)
 # ggpairs(subset, columns = 1:3 ,ggplot2::aes(colour = region), upper = list(continuous = wrap("cor", size = 3)))
 
@@ -140,14 +140,14 @@ ceu <- cor(smp_eu)
 cus <- cor(smp_us)
 
 par(mfrow=c(2,2)) 
-corrplot.mixed(c, tl.cex=0.7, tl.col="black")
-mtext("Pearson Correlations for all Regions", at=2, line=1.5, cex=.9)
-corrplot.mixed(cc, tl.cex=0.7, tl.col="black")
-mtext("Pearson Correlations for Sub-Saharan Africa", at=2, line=1.5, cex=.9)
-corrplot.mixed(ceu, tl.cex=0.7, tl.col="black")
-mtext("Pearson Correlations for Europe & Central Asia", at=2, line=1.5, cex=.9)
-corrplot.mixed(cus, tl.cex=0.7, tl.col="black")
-mtext("Pearson Correlations for North America", at=2, line=1.5, cex=.9)
+corrplot.mixed(c, tl.cex=0.4, tl.col="black")
+mtext("Pearson Correlations for all Regions", at=2, line=-5.1, cex=.6)
+corrplot.mixed(cc, tl.cex=0.4, tl.col="black")
+mtext("Pearson Correlations for Sub-Saharan Africa", at=2, line=-5.1, cex=.6)
+corrplot.mixed(ceu, tl.cex=0.4, tl.col="black")
+mtext("Pearson Correlations for Europe & Central Asia", at=2, line=-5.1, cex=.6)
+corrplot.mixed(cus, tl.cex=0.4, tl.col="black")
+mtext("Pearson Correlations for North America", at=2, line=-5.1, cex=.6)
 ```
 
 ### ... and regression table...
