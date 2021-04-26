@@ -43,7 +43,6 @@ header-includes:
 ---
 
 ```{r setup, message=FALSE, warning=FALSE, include=FALSE}
-library(GGally)
 library(dplyr)
 library(ggplot2)
 library(stringr)
