@@ -22,7 +22,6 @@ knitr::opts_chunk$set(
 )
 library(tidyverse)
 library(kableExtra)
-library(GGally)
 library(corrplot)
 load("../output/results.rda")
 load("../data/generated/sample.rda")
